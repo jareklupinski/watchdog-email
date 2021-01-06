@@ -3,7 +3,9 @@ package main
 import (
 	"log"
 	"os"
+	"os/signal"
 	"strconv"
+	"syscall"
 	"time"
 
 	"github.com/gomodule/redigo/redis"
@@ -47,12 +49,39 @@ func checkWatchdog(r *util.RedisController) bool {
 }
 
 func main() {
+	log.Println("Watchdog.Email Worker Starting")
 	redisContext := util.NewRedisController()
-	i := 0
-	for checkWatchdog(redisContext) {
-		i++
-	}
+	ticker := time.NewTicker(10 * time.Minute)
+
+	quit := make(chan os.Signal)
+	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
+
+	go func() {
+		for {
+			select {
+			case <-ticker.C:
+				i := 0
+				for checkWatchdog(redisContext) {
+					i++
+					select {
+					case <-quit:
+						break
+					default:
+						continue
+					}
+				}
+				log.Printf("Watchdog.Email Worker Sent %d emails\n", i)
+			case <-quit:
+				ticker.Stop()
+				return
+			default:
+				continue
+			}
+		}
+	}()
+
+	<-quit
 	redisContext.CloseRedisController()
-	log.Printf("Watchdog.Email Worker Sent %d emails\n", i)
+	log.Println("Watchdog.Email Worker Exiting")
 	os.Exit(0)
 }

@@ -63,6 +63,9 @@ func main() {
 		Handler: router,
 	}
 
+	quit := make(chan os.Signal)
+	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
+
 	go func() {
 		log.Println("Watchdog.Email Server Running")
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
@@ -70,8 +73,6 @@ func main() {
 		}
 	}()
 
-	quit := make(chan os.Signal)
-	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
 	<-quit
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
