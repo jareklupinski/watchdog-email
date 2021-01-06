@@ -72,7 +72,7 @@ func main() {
 					}
 				}
 				log.Printf("Watchdog.Email Worker Sent %d emails\n", i)
-				time.Sleep(10 * time.Second)
+				time.Sleep(10 * time.Minute)
 			}
 		}
 	}()
