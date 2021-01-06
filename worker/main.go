@@ -46,11 +46,11 @@ func checkWatchdog(r *util.RedisController) bool {
 }
 
 func main() {
-	log.Println("Watchdog.Email Worker Starting")
 	redisContext := util.NewRedisController()
-	log.Println("Watchdog.Email Worker Running")
+	i := -1
 	for checkWatchdog(redisContext) {
+		i++
 	}
 	redisContext.CloseRedisController()
-	log.Println("Watchdog.Email Worker Exiting")
+	log.Printf("Watchdog.Email Worker Sent %d emails\n", i)
 }
