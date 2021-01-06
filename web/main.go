@@ -42,8 +42,16 @@ func startWatchdog(r *util.RedisController) gin.HandlerFunc {
 	return fn
 }
 
+func runForever(srv *http.Server) {
+	log.Println("Watchdog.Email Server Running")
+	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		log.Panicf("Server Error: %v", err)
+	}
+}
+
 func main() {
 	log.Println("Watchdog.Email Server Starting")
+
 	redisContext := util.NewRedisController()
 
 	port := os.Getenv("PORT")
@@ -57,6 +65,7 @@ func main() {
 	router.LoadHTMLGlob("templates/*.html")
 	router.Static("/static", "static")
 	router.GET("/", startWatchdog(redisContext))
+
 	serverAddress := fmt.Sprintf(":%s", port)
 	srv := &http.Server{
 		Addr:    serverAddress,
@@ -66,20 +75,19 @@ func main() {
 	quit := make(chan os.Signal)
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
 
-	go func() {
-		log.Println("Watchdog.Email Server Running")
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Panicf("Server Error: %v", err)
-		}
-	}()
+	go runForever(srv)
 
 	<-quit
+
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
+
 	if err := srv.Shutdown(ctx); err != nil {
 		log.Panicf("Server forced to shutdown: %v", err)
 	}
+
 	redisContext.CloseRedisController()
+
 	log.Println("Watchdog.Email Server Exiting")
 	os.Exit(0)
 }

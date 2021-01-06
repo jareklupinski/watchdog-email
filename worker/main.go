@@ -48,37 +48,42 @@ func checkWatchdog(r *util.RedisController) bool {
 	}
 }
 
+func runForever(quit <-chan os.Signal, redisContext *util.RedisController) {
+	for {
+		select {
+		case <-quit:
+			return
+		default:
+			i := 0
+			for checkWatchdog(redisContext) {
+				i++
+				select {
+				case <-quit:
+					break
+				default:
+					continue
+				}
+			}
+			log.Printf("Watchdog.Email Worker Sent %d emails\n", i)
+			time.Sleep(10 * time.Minute)
+		}
+	}
+}
+
 func main() {
 	log.Println("Watchdog.Email Worker Starting")
+
 	redisContext := util.NewRedisController()
 
 	quit := make(chan os.Signal)
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
 
-	go func() {
-		for {
-			select {
-			case <-quit:
-				return
-			default:
-				i := 0
-				for checkWatchdog(redisContext) {
-					i++
-					select {
-					case <-quit:
-						break
-					default:
-						continue
-					}
-				}
-				log.Printf("Watchdog.Email Worker Sent %d emails\n", i)
-				time.Sleep(10 * time.Minute)
-			}
-		}
-	}()
+	go runForever(quit, redisContext)
 
 	<-quit
+
 	redisContext.CloseRedisController()
+
 	log.Println("Watchdog.Email Worker Exiting")
 	os.Exit(0)
 }
