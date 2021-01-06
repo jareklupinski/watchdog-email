@@ -75,12 +75,12 @@ func runForever(quit <-chan os.Signal, ready chan<- bool) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-
 	if err := srv.Shutdown(ctx); err != nil {
 		log.Panicf("Server forced to shutdown: %v", err)
 	}
 
 	redisContext.CloseRedisController()
+
 	ready <- true
 }
 
@@ -88,8 +88,8 @@ func main() {
 	log.Println("Watchdog.Email Server Starting")
 
 	quit := make(chan os.Signal)
-	ready := make(chan bool)
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
+	ready := make(chan bool)
 
 	go runForever(quit, ready)
 
