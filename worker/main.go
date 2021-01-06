@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 	"strconv"
 	"time"
 
@@ -53,4 +54,5 @@ func main() {
 	}
 	redisContext.CloseRedisController()
 	log.Printf("Watchdog.Email Worker Sent %d emails\n", i)
+	os.Exit(0)
 }

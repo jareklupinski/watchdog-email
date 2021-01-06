@@ -79,4 +79,5 @@ func main() {
 	}
 	redisContext.CloseRedisController()
 	log.Println("Watchdog.Email Server Exiting")
+	os.Exit(0)
 }
