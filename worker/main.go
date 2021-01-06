@@ -56,7 +56,6 @@ func runForever(quit <-chan os.Signal, ready chan<- bool) {
 	ticker := time.NewTicker(10 * time.Second)
 	multiball := make(chan bool)
 
-	multiball <- true
 	log.Println("Watchdog.Email Worker Running")
 	for {
 		select {
