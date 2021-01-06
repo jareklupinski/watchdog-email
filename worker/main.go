@@ -53,8 +53,9 @@ func checkWatchdog(r *util.RedisController) bool {
 func runForever(quit <-chan os.Signal, ready chan<- bool) {
 	redisContext := util.NewRedisController()
 
-	ticker := time.NewTicker(10 * time.Second)
-	multiball := make(chan bool)
+	ticker := time.NewTicker(10 * time.Minute)
+	multiballTicker := time.NewTicker(10 * time.Millisecond)
+	multiball := false
 
 	log.Println("Watchdog.Email Worker Running")
 	for {
@@ -62,12 +63,18 @@ func runForever(quit <-chan os.Signal, ready chan<- bool) {
 		case <-ticker.C:
 			if checkWatchdog(redisContext) {
 				log.Println("Watchdog.Email Worker Sent an email")
-				multiball <- true
+				multiball = true
+			} else {
+				multiball = false
 			}
-		case <-multiball:
-			if checkWatchdog(redisContext) {
-				log.Println("Watchdog.Email Worker Sent an email")
-				multiball <- true
+		case <-multiballTicker.C:
+			if multiball {
+				if checkWatchdog(redisContext) {
+					log.Println("Watchdog.Email Worker Sent an email")
+					multiball = true
+				} else {
+					multiball = false
+				}
 			}
 		case <-quit:
 			ticker.Stop()
