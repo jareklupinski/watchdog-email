@@ -53,7 +53,7 @@ func checkWatchdog(r *util.RedisController) bool {
 func runForever(quit <-chan os.Signal, ready chan<- bool) {
 	redisContext := util.NewRedisController()
 
-	ticker := time.NewTicker(10 * time.Minute)
+	ticker := time.NewTicker(10 * time.Second)
 	multiball := make(chan bool)
 
 	multiball <- true
