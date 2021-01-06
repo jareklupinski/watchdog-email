@@ -50,7 +50,7 @@ func checkWatchdog(r *util.RedisController) bool {
 
 func runForever(quit <-chan os.Signal, ready chan<- bool) {
 	redisContext := util.NewRedisController()
-	ticker := time.NewTicker(1 * time.Minute)
+	ticker := time.NewTicker(10 * time.Minute)
 	log.Println("Watchdog.Email Worker Running")
 	for {
 		select {
@@ -66,7 +66,9 @@ func runForever(quit <-chan os.Signal, ready chan<- bool) {
 					continue
 				}
 			}
-			log.Printf("Watchdog.Email Worker Sent %d emails\n", i)
+			if i > 0 {
+				log.Printf("Watchdog.Email Worker Sent %d emails\n", i)
+			}
 		case <-quit:
 			ticker.Stop()
 			redisContext.CloseRedisController()
