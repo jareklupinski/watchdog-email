@@ -1,0 +1,12 @@
+{
+  "name": "Watchdog.Email",
+  "description": "A Service That Sends You An Email In 25 Hours",
+  "keywords": [
+    "watchdog",
+    "timer",
+    "email",
+    "service"
+  ],
+  "website": "http://watchdog.email",
+  "repository": "http://github.com/jareklupinski/watchdog-email"
+}

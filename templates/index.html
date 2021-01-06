@@ -1,0 +1,90 @@
+<html lang="en">
+<head>
+  <title>Watchdog.Email</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+  <script type="text/javascript" src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css"/>
+  <link rel="stylesheet" type="text/css" href="/static/main.css"/>
+</head>
+<body>
+<div class="jumbotron text-center">
+  <div class="container">
+    <h1>
+      ⏰ 🐕 . 📧
+    </h1>
+    <h2>
+      Watchdog.Email
+    </h2>
+    <p>
+      A Service That Sends You An Email In 25 Hours
+    </p>
+    <form class="form-inline" action="/" method="get">
+      <div class="form-group form-group-lg">
+        <label class="sr-only" for="email">Email address</label>
+        <input type="email" class="form-control form-control-lg" id="email" name="email" placeholder="Email">
+      </div>
+      <input type="submit" class="btn btn-lg btn-default" value="Start Watchdog">
+    </form>
+  </div>
+</div>
+<div class="container">
+  <div class="alert alert-info text-center">
+    Privacy Policy: We will only ever send you one email; when your Watchdog times out after 25 hours. After the email is sent, your address is wiped from our database.
+  </div>
+  <hr>
+  <div class="row">
+    <div class="col-md-6">
+      <h3>
+        <span class="glyphicon glyphicon-info-sign"></span>
+        How This Works
+      </h3>
+      <ul>
+        <li>
+          When you type in an email address and click Start Watchdog, a 25 Hour Watchdog Timer starts running on our servers.
+        </li>
+        <li>
+          After 25 hours have elapsed, Watchdog.Email sends an email to the address you specified notifying that the Watchdog Timer has run out.
+        </li>
+        <li>
+          If you want to delay the email from arriving for another 25 hours, type the same email address into the field again and click Start Watchdog to restart your Watchdog.
+        </li>
+        <li>
+          You can repeat this process as many times as you like; as long as you keep restarting your Watchdog within 25 hours, you will not receive an email.
+        </li>
+        <li>
+          You can also use this service programmatically by sending your Watchdog.Email request to <code>https://watchdog.email/?email=&lt;email_address&gt;</code>.
+        </li>
+      </ul>
+    </div>
+    <div class="col-md-6">
+      <h3>
+        <span class="glyphicon glyphicon-link"></span>
+        Further Reading
+      </h3>
+      <ul>
+        <li>
+          Wikipedia: A <a href="https://en.wikipedia.org/wiki/Watchdog_timer">watchdog timer</a> (sometimes called a
+          computer operating properly or COP timer, or simply a watchdog) is an electronic or software timer that is
+          used to detect and recover from computer malfunctions. During normal operation, the computer regularly resets
+          the watchdog timer to prevent it from elapsing, or "timing out". If, due to a hardware fault or program error,
+          the computer fails to reset the watchdog, the timer will elapse and generate a timeout signal. The timeout
+          signal is used to initiate corrective actions. The corrective actions typically include placing the computer
+          system in a safe state and restoring normal system operation.
+        </li>
+        <li>
+          Github: Full Source Code available at
+          <a href="https://github.com/jareklupinski/watchdog-email">https://github.com/jareklupinski/watchdog-email</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+  <hr>
+  <div class="alert alert-info text-center">
+    We have no idea how to monetize this, and will continue to keep this running on a Heroku Free Tier until it begins accruing a billing rate above which we can spend.
+    If there is any danger to the service shutting down, we'll solicit some donations to keep the cost alive via Hackernews and Github.
+    If this still fails we will shutdown the incoming reset button and link for 25 hours by returning any calls to it with <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402">a 402 error message</a>
+    to allow the last day's worth of watchdogs to elapse.
+  </div>
+</div>
+</body>
+</html>
