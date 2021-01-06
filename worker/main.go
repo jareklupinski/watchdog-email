@@ -49,23 +49,25 @@ func checkWatchdog(r *util.RedisController) bool {
 }
 
 func runForever(quit <-chan os.Signal, redisContext *util.RedisController) {
+	ticker := time.NewTicker(10 * time.Minute)
 	for {
 		select {
-		case <-quit:
-			return
-		default:
+		case <-ticker.C:
 			i := 0
 			for checkWatchdog(redisContext) {
 				i++
 				select {
 				case <-quit:
+					log.Println("Watchdog Routine Interrupted")
 					break
 				default:
 					continue
 				}
 			}
 			log.Printf("Watchdog.Email Worker Sent %d emails\n", i)
-			time.Sleep(10 * time.Minute)
+		case <-quit:
+			ticker.Stop()
+			return
 		}
 	}
 }
