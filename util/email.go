@@ -31,8 +31,8 @@ func SendEmail(emailAddress string) {
 	from := mail.NewEmail("⏰🐕.📧", "timer@watchdog.email")
 	subject := "Your Watchdog.Email Timer has Fired!"
 	to := mail.NewEmail(emailAddress, emailAddress)
-	plainTextContent := "Reset your timer: http://watchdog.email/" + emailAddress
-	htmlContent := "Reset your timer: <a href=\"http://watchdog.email/" + emailAddress + "\">http://watchdog.email/" + emailAddress + "</a>"
+	plainTextContent := "Reset your timer: http://watchdog.email/?email=" + emailAddress
+	htmlContent := "Reset your timer: <a href=\"http://watchdog.email/?email=" + emailAddress + "\">http://watchdog.email/?email=" + emailAddress + "</a>"
 	message := mail.NewSingleEmail(from, subject, to, plainTextContent, htmlContent)
 	client := sendgrid.NewSendClient(os.Getenv("SENDGRID_API_KEY"))
 
