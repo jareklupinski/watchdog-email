@@ -7,7 +7,7 @@ Full source code for http://watchdog.email
 
 Inspired by a lack of simple watchdog timers, I set out to see what makes them so difficult.
 
-Currently deployed to Heroku with the following Apps:
+Currently deployed to Heroku with the following Free Apps:
 - Heroku Redis
 - Heroku Scheduler
 - Papertrail
