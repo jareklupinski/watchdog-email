@@ -37,11 +37,10 @@ func SendEmail(emailAddress string) {
 	client := sendgrid.NewSendClient(os.Getenv("SENDGRID_API_KEY"))
 
 	response, err := client.Send(message)
-	if err != nil || response.StatusCode != 200 {
-		if response != nil {
-			log.Printf("Failed to send email to %s: %s, SendGrid Response %d: %s\n", emailAddress, err, response.StatusCode, response.Body)
-		} else {
-			log.Printf("Failed to send email to %s: %s, No SendGrid Response\n", emailAddress, err)
-		}
+	if err != nil {
+		log.Printf("Failed to send email to %s: %s, No SendGrid Response\n", emailAddress, err)
+	}
+	if response.StatusCode < 200 || response.StatusCode >= 300 {
+		log.Printf("Failed to send email to %s: %s, SendGrid Response %d: %s\n", emailAddress, err, response.StatusCode, response.Body)
 	}
 }

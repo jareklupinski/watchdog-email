@@ -39,7 +39,7 @@ func checkWatchdog(r *util.RedisController) bool {
 	} else {
 		rows, err := redis.Int(rds.Do("ZADD", "email", "CH", alarm, emailAddress))
 		if err != nil || rows < 1 {
-			log.Panicf("Failed to set Watchdog.Email timer for %s: %s", emailAddress, err)
+			log.Panicf("Failed to set Watchdog.Email timer for %s: %v", emailAddress, err)
 		}
 		return false
 	}

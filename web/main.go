@@ -56,15 +56,16 @@ func main() {
 	router.LoadHTMLGlob("templates/*.html")
 	router.Static("/static", "static")
 	router.GET("/", startWatchdog(redisContext))
+	serverAddress := fmt.Sprintf(":%s", port)
 	srv := &http.Server{
-		Addr:    fmt.Sprintf(":%s", port),
+		Addr:    serverAddress,
 		Handler: router,
 	}
 
 	go func() {
 		log.Println("Watchdog.Email Server Running")
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Panicf("Server Error: %s", err)
+			log.Panicf("Server Error: %v", err)
 		}
 	}()
 
@@ -74,7 +75,7 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	if err := srv.Shutdown(ctx); err != nil {
-		log.Panicf("Server forced to shutdown: %s", err)
+		log.Panicf("Server forced to shutdown: %v", err)
 	}
 	redisContext.CloseRedisController()
 	log.Println("Watchdog.Email Server Exiting")
