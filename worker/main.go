@@ -48,7 +48,7 @@ func checkWatchdog(r *util.RedisController) bool {
 	}
 }
 
-func runForever(quit <-chan os.Signal) {
+func runForever(quit <-chan os.Signal, ready chan<- bool) {
 	redisContext := util.NewRedisController()
 	ticker := time.NewTicker(1 * time.Minute)
 	for {
@@ -69,7 +69,7 @@ func runForever(quit <-chan os.Signal) {
 		case <-quit:
 			ticker.Stop()
 			redisContext.CloseRedisController()
-			return
+			ready <- true
 		}
 	}
 }
@@ -78,11 +78,12 @@ func main() {
 	log.Println("Watchdog.Email Worker Starting")
 
 	quit := make(chan os.Signal)
+	ready := make(chan bool)
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
 
-	go runForever(quit)
+	go runForever(quit, ready)
 
-	<-quit
+	<-ready
 
 	log.Println("Watchdog.Email Worker Exiting")
 	os.Exit(0)
