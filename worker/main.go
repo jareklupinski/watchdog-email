@@ -20,7 +20,7 @@ func checkWatchdog(r *util.RedisController) bool {
 
 	redisStrings, err := redis.Strings(rds.Do("ZPOPMIN", "email"))
 	if err != nil {
-		log.Panic(err)
+		log.Panicf("Failed Popping Redis Entry: %v", err)
 	}
 	if len(redisStrings) < 2 {
 		log.Panic("No Entries In Database!")
@@ -29,7 +29,7 @@ func checkWatchdog(r *util.RedisController) bool {
 	emailAddress := redisStrings[0]
 	alarm, err := strconv.ParseInt(redisStrings[1], 10, 64)
 	if err != nil {
-		log.Panic(err)
+		log.Panicf("Failed Parsing Redis Time: %v", err)
 	}
 
 	if alarm < now {
@@ -48,30 +48,6 @@ func checkWatchdog(r *util.RedisController) bool {
 	}
 }
 
-func runForever(quit <-chan os.Signal, redisContext *util.RedisController) {
-	ticker := time.NewTicker(10 * time.Minute)
-	for {
-		select {
-		case <-ticker.C:
-			i := 0
-			for checkWatchdog(redisContext) {
-				i++
-				select {
-				case <-quit:
-					log.Println("Watchdog Routine Interrupted")
-					break
-				default:
-					continue
-				}
-			}
-			log.Printf("Watchdog.Email Worker Sent %d emails\n", i)
-		case <-quit:
-			ticker.Stop()
-			return
-		}
-	}
-}
-
 func main() {
 	log.Println("Watchdog.Email Worker Starting")
 
@@ -80,7 +56,29 @@ func main() {
 	quit := make(chan os.Signal)
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
 
-	go runForever(quit, redisContext)
+	ticker := time.NewTicker(10 * time.Minute)
+	go func() {
+		for {
+			select {
+			case <-ticker.C:
+				i := 0
+				for checkWatchdog(redisContext) {
+					i++
+					select {
+					case <-quit:
+						log.Println("Watchdog Routine Interrupted")
+						break
+					default:
+						continue
+					}
+				}
+				log.Printf("Watchdog.Email Worker Sent %d emails\n", i)
+			case <-quit:
+				ticker.Stop()
+				return
+			}
+		}
+	}()
 
 	<-quit
 
