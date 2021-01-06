@@ -3,6 +3,7 @@ package util
 import (
 	"github.com/sendgrid/sendgrid-go"
 	"github.com/sendgrid/sendgrid-go/helpers/mail"
+	"html"
 	"log"
 	"net"
 	"os"
@@ -31,8 +32,9 @@ func SendEmail(emailAddress string) {
 	from := mail.NewEmail("⏰🐕.📧", "timer@watchdog.email")
 	subject := "Your Watchdog.Email Timer has Fired!"
 	to := mail.NewEmail(emailAddress, emailAddress)
-	plainTextContent := "Reset your timer: http://watchdog.email/?email=" + emailAddress
-	htmlContent := "Reset your timer: <a href=\"http://watchdog.email/?email=" + emailAddress + "\">http://watchdog.email/?email=" + emailAddress + "</a>"
+	emailAddressString := html.EscapeString(emailAddress)
+	plainTextContent := "Reset your timer: http://watchdog.email/?email=" + emailAddressString
+	htmlContent := "Reset your timer: <a href=\"http://watchdog.email/?email=" + emailAddressString + "\">http://watchdog.email/?email=" + emailAddressString + "</a>"
 	message := mail.NewSingleEmail(from, subject, to, plainTextContent, htmlContent)
 	client := sendgrid.NewSendClient(os.Getenv("SENDGRID_API_KEY"))
 
