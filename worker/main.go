@@ -58,6 +58,12 @@ func runForever(quit <-chan os.Signal, ready chan<- bool) {
 	multiball := false
 
 	log.Println("Watchdog.Email Worker Running")
+	if checkWatchdog(redisContext) {
+		log.Println("Watchdog.Email Worker Sent an email")
+		multiball = true
+	} else {
+		multiball = false
+	}
 	for {
 		select {
 		case <-ticker.C:
