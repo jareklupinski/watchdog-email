@@ -47,7 +47,7 @@ func checkWatchdog(r *util.RedisController) bool {
 
 func main() {
 	redisContext := util.NewRedisController()
-	i := -1
+	i := 0
 	for checkWatchdog(redisContext) {
 		i++
 	}
