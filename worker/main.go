@@ -50,7 +50,7 @@ func checkWatchdog(r *util.RedisController) bool {
 
 func runForever(quit <-chan os.Signal) {
 	redisContext := util.NewRedisController()
-	ticker := time.NewTicker(10 * time.Minute)
+	ticker := time.NewTicker(1 * time.Minute)
 	for {
 		select {
 		case <-ticker.C:
