@@ -23,13 +23,15 @@ func checkWatchdog(r *util.RedisController) bool {
 		log.Panicf("Failed Popping Redis Entry: %v", err)
 	}
 	if len(redisStrings) < 2 {
-		log.Panic("No Entries In Database!")
+		log.Println("No Entries In Database!")
+		return false
 	}
 
 	emailAddress := redisStrings[0]
 	alarm, err := strconv.ParseInt(redisStrings[1], 10, 64)
 	if err != nil {
-		log.Panicf("Failed Parsing Redis Time: %v", err)
+		log.Printf("Failed Parsing Redis Time: %v\n", err)
+		alarm = 0
 	}
 
 	if alarm < now {
@@ -42,7 +44,7 @@ func checkWatchdog(r *util.RedisController) bool {
 	} else {
 		rows, err := redis.Int(rds.Do("ZADD", "email", "CH", alarm, emailAddress))
 		if err != nil || rows < 1 {
-			log.Panicf("Failed to set Watchdog.Email timer for %s: %v", emailAddress, err)
+			log.Panicf("Failed to re-add Watchdog.Email timer for %s: %v", emailAddress, err)
 		}
 		return false
 	}
@@ -54,6 +56,7 @@ func runForever(quit <-chan os.Signal, ready chan<- bool) {
 	ticker := time.NewTicker(10 * time.Minute)
 	multiball := make(chan bool)
 
+	multiball <- true
 	log.Println("Watchdog.Email Worker Running")
 	for {
 		select {
