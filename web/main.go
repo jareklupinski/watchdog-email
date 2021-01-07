@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
 
@@ -19,15 +20,6 @@ import (
 
 func startWatchdog(pool *redis.Pool) gin.HandlerFunc {
 	fn := func(c *gin.Context) {
-		email := c.Query("email")
-		if email == "" {
-			c.HTML(http.StatusOK, "index.html", nil)
-			return
-		}
-		if !util.EmailIsValid(email) {
-			c.String(http.StatusBadRequest, "Cannot set Watchdog.Email timer for %s", email)
-			return
-		}
 		conn := pool.Get()
 		defer func() {
 			err := conn.Close()
@@ -35,6 +27,42 @@ func startWatchdog(pool *redis.Pool) gin.HandlerFunc {
 				log.Panic(err)
 			}
 		}()
+		email := c.Query("email")
+		if email == "" {
+			rows, err := redis.Int(conn.Do("ZCOUNT", "email", "-inf", "+inf"))
+			if err != nil {
+				log.Println(err)
+				c.String(http.StatusServiceUnavailable, "Failed Loading Timers")
+				return
+			}
+			nextTimeout := "0"
+			if rows > 0 {
+				strings, err := redis.Strings(conn.Do("ZRANGEBYSCORE", "email", "-inf", "+inf", "WITHSCORES", "LIMIT", "0", "1"))
+				if err != nil {
+					log.Println(err)
+					c.String(http.StatusServiceUnavailable, "Failed Loading Timers")
+					return
+				}
+				alarm, err := strconv.ParseInt(strings[1], 10, 64)
+				if err != nil {
+					log.Println(err)
+					c.String(http.StatusServiceUnavailable, "Failed Loading Timers")
+					return
+				}
+				nextTimeout = time.Unix(alarm, 0).String()
+			}
+
+			c.HTML(http.StatusOK, "index.html", gin.H{
+				"numWatchdogs": rows,
+				"nextTimeout":  nextTimeout,
+			})
+			return
+		}
+		if !util.EmailIsValid(email) {
+			c.String(http.StatusBadRequest, "Cannot set Watchdog.Email timer for %s", email)
+			return
+		}
+
 		now := time.Now().Unix()
 		alarm := now + 90000 // (60 seconds / minute) * (60 minutes / hour) * (25 hours / timeout)
 		rows, err := redis.Int(conn.Do("ZADD", "email", "CH", alarm, email))
