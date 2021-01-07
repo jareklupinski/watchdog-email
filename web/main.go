@@ -48,6 +48,11 @@ func startWatchdog(pool *redis.Pool) gin.HandlerFunc {
 	return fn
 }
 
+func sendHead(c *gin.Context) {
+	c.String(http.StatusOK, "")
+	return
+}
+
 func runForever(quit <-chan os.Signal, ready chan<- bool) {
 	addr := os.Getenv("REDIS_URL")
 	pool := util.NewPool(addr)
@@ -64,6 +69,7 @@ func runForever(quit <-chan os.Signal, ready chan<- bool) {
 	router.StaticFile("/robots.txt", "static/robots.txt")
 	router.StaticFile("/favicon.ico", "static/favicon.ico")
 	router.Static("/static", "static")
+	router.HEAD("/", sendHead)
 	router.GET("/", startWatchdog(pool))
 
 	serverAddress := fmt.Sprintf(":%s", port)
