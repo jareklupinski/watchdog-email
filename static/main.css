@@ -47,3 +47,9 @@
     margin-left: 0.75em;
   }
 }
+
+@media only screen and (max-width: 600px) {
+  .display-2 {
+    font-size: 4em;
+  }
+}
