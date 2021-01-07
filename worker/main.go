@@ -76,6 +76,11 @@ func runForever(quit <-chan os.Signal, ready chan<- bool) {
 			}
 		case <-quit:
 			ticker.Stop()
+			multiballTicker.Stop()
+			err := pool.Close()
+			if err != nil {
+				log.Panic(err)
+			}
 			ready <- true
 		}
 	}

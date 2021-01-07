@@ -88,6 +88,11 @@ func runForever(quit <-chan os.Signal, ready chan<- bool) {
 		log.Panicf("Server forced to shutdown: %v", err)
 	}
 
+	err := pool.Close()
+	if err != nil {
+		log.Panic(err)
+	}
+
 	ready <- true
 }
 
