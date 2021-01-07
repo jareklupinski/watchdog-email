@@ -19,3 +19,31 @@
   max-width: 75%;
   margin: 1em auto 1em;
 }
+
+@media only screen and (prefers-color-scheme: dark) {
+  body {
+    background: #121212;
+    color: #fafbfc;
+  }
+
+  .alert-info {
+    background-color: #284a4a;
+    color: #b3bec3;
+  }
+
+  .container p {
+    color: white;
+  }
+
+  .jumbotron {
+    background: #200748;
+    color: #fafbfc;
+  }
+
+  .jumbotron .btn {
+    background: #fafbfc;
+    color: #24292e;
+    border-color: rgba(27,31,35,.15);
+    margin-left: 0.75em;
+  }
+}
