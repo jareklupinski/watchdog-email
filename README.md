@@ -15,4 +15,7 @@ Currently deployed to Heroku with the following Free Apps:
 
 2 Free Dynos are used to run the service:
 - web - handles frontend http requests
-- worker - runs on a timer to send emails (woken up by Heroku Scheduler when it idles)
+- worker - runs on a timer to send emails
+
+A timer script is included to ping the web dyno periodically to wake it up if it falls asleep.
+Heroku's idling rules tell a worker dyno to go to sleep when its associated web dyno sleeps. 🤷
