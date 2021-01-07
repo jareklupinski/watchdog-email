@@ -14,11 +14,17 @@ import (
 	"watchdog-email/util"
 )
 
-func checkWatchdog(r *util.RedisController) bool {
-	rds := r.GetRedisConnection()
+func checkWatchdog(pool *redis.Pool) bool {
+	conn := pool.Get()
+	defer func() {
+		err := conn.Close()
+		if err != nil {
+			log.Panic(err)
+		}
+	}()
 	now := time.Now().Unix()
 
-	redisStrings, err := redis.Strings(rds.Do("ZPOPMIN", "email"))
+	redisStrings, err := redis.Strings(conn.Do("ZPOPMIN", "email"))
 	if err != nil {
 		log.Panicf("Failed Popping Redis Entry: %v", err)
 	}
@@ -42,7 +48,7 @@ func checkWatchdog(r *util.RedisController) bool {
 		}
 		return true
 	} else {
-		rows, err := redis.Int(rds.Do("ZADD", "email", "CH", alarm, emailAddress))
+		rows, err := redis.Int(conn.Do("ZADD", "email", "CH", alarm, emailAddress))
 		if err != nil || rows < 1 {
 			log.Panicf("Failed to re-add Watchdog.Email timer for %s: %v", emailAddress, err)
 		}
@@ -51,31 +57,32 @@ func checkWatchdog(r *util.RedisController) bool {
 }
 
 func runForever(quit <-chan os.Signal, ready chan<- bool) {
-	redisContext := util.NewRedisController()
+	addr := os.Getenv("REDIS_URL")
+	pool := util.NewPool(addr)
 
 	ticker := time.NewTicker(1 * time.Minute)
 	multiballTicker := time.NewTicker(10 * time.Millisecond)
 
 	log.Println("Watchdog.Email Worker Running")
 
-	multiball := checkWatchdog(redisContext)
+	multiball := checkWatchdog(pool)
 	for {
 		select {
 		case <-ticker.C:
-			multiball = checkWatchdog(redisContext)
+			multiball = checkWatchdog(pool)
 		case <-multiballTicker.C:
 			if multiball {
-				multiball = checkWatchdog(redisContext)
+				multiball = checkWatchdog(pool)
 			}
 		case <-quit:
 			ticker.Stop()
-			redisContext.CloseRedisController()
 			ready <- true
 		}
 	}
 }
 
 func main() {
+	log.SetFlags(0)
 	log.Println("Watchdog.Email Worker Starting")
 
 	quit := make(chan os.Signal)

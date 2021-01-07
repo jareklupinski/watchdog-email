@@ -17,7 +17,7 @@ import (
 	"watchdog-email/util"
 )
 
-func startWatchdog(r *util.RedisController) gin.HandlerFunc {
+func startWatchdog(pool *redis.Pool) gin.HandlerFunc {
 	fn := func(c *gin.Context) {
 		email := c.Query("email")
 		if email == "" {
@@ -28,10 +28,16 @@ func startWatchdog(r *util.RedisController) gin.HandlerFunc {
 			c.String(http.StatusBadRequest, "Cannot set Watchdog.Email timer for %s", email)
 			return
 		}
-		rds := r.GetRedisConnection()
+		conn := pool.Get()
+		defer func() {
+			err := conn.Close()
+			if err != nil {
+				log.Panic(err)
+			}
+		}()
 		now := time.Now().Unix()
 		alarm := now + 90000 // (60 seconds / minute) * (60 minutes / hour) * (25 hours / timeout)
-		rows, err := redis.Int(rds.Do("ZADD", "email", "CH", alarm, email))
+		rows, err := redis.Int(conn.Do("ZADD", "email", "CH", alarm, email))
 		if err != nil || rows < 1 {
 			log.Printf("Failed to set Watchdog.Email timer for %s: %s", email, err)
 			c.String(http.StatusInternalServerError, "Failed to set Watchdog.Email timer for %s", email)
@@ -43,7 +49,8 @@ func startWatchdog(r *util.RedisController) gin.HandlerFunc {
 }
 
 func runForever(quit <-chan os.Signal, ready chan<- bool) {
-	redisContext := util.NewRedisController()
+	addr := os.Getenv("REDIS_URL")
+	pool := util.NewPool(addr)
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -55,7 +62,7 @@ func runForever(quit <-chan os.Signal, ready chan<- bool) {
 	router.Use(gin.Logger())
 	router.LoadHTMLGlob("templates/*.html")
 	router.Static("/static", "static")
-	router.GET("/", startWatchdog(redisContext))
+	router.GET("/", startWatchdog(pool))
 
 	serverAddress := fmt.Sprintf(":%s", port)
 	srv := &http.Server{
@@ -79,12 +86,11 @@ func runForever(quit <-chan os.Signal, ready chan<- bool) {
 		log.Panicf("Server forced to shutdown: %v", err)
 	}
 
-	redisContext.CloseRedisController()
-
 	ready <- true
 }
 
 func main() {
+	log.SetFlags(0)
 	log.Println("Watchdog.Email Server Starting")
 
 	quit := make(chan os.Signal)
