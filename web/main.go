@@ -61,7 +61,7 @@ func runForever(quit <-chan os.Signal, ready chan<- bool) {
 	router := gin.New()
 	router.Use(gin.Logger())
 	router.LoadHTMLGlob("templates/*.html")
-	router.StaticFile("/robots.txt", "/static/robots.txt")
+	router.StaticFile("/robots.txt", "static/robots.txt")
 	router.Static("/static", "static")
 	router.GET("/", startWatchdog(pool))
 
