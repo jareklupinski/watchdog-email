@@ -8,8 +8,9 @@ import (
 
 func NewPool(addr string) *redis.Pool {
 	return &redis.Pool{
-		MaxIdle:     3,
+		MaxIdle:     50,
 		IdleTimeout: 240 * time.Second,
+		MaxActive:   50,
 		Wait:        true,
 		Dial:        func() (redis.Conn, error) { return redis.Dial("tcp", addr) },
 		TestOnBorrow: func(c redis.Conn, t time.Time) error {
