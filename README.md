@@ -13,9 +13,9 @@ Currently deployed to Heroku with the following Free Apps:
 - Papertrail
 - SendGrid
 
-2 Free Dynos are used to run the service:
+3 Free Dynos are used to run the service:
 - web - handles frontend http requests
-- worker - runs on a timer to send emails
+- worker - sends an email if the watchdog fired
+- timer - pings the web dyno to wake it up once per hour
 
-A timer script is included to ping the web dyno periodically to wake it up if it falls asleep.
 Heroku's idling rules tell a worker dyno to go to sleep when its associated web dyno sleeps. 🤷
