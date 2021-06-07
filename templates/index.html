@@ -36,14 +36,18 @@
     </div>
     <div class="row d-flex justify-content-center">
       <p class="lead text-center">
-        A Service That Sends You An Email After 25 Hours
+        A Service That Sends You An Email After Some Time
       </p>
     </div>
     <div class="row d-flex justify-content-center">
       <form class="form-inline d-flex justify-content-center" action="/" method="get">
         <div class="form-group form-group-lg">
           <label class="sr-only" for="email">Email address</label>
-          <input type="email" class="form-control form-control-lg p-3" id="email" name="email" placeholder="Email">
+          <input type="email" class="form-control form-control-lg m-2" id="email" name="email" placeholder="Email">
+        </div>
+        <div class="form-group form-group-lg">
+          <label class="sr-only" for="timeout">Duration (seconds)</label>
+          <input type="number" class="form-control form-control-lg m-2" id="timeout" name="timeout" placeholder="Duration (seconds)">
         </div>
         <input type="submit" class="btn btn-lg btn-default" value="Start Watchdog">
       </form>
@@ -62,7 +66,7 @@
 </div>
 <div class="container">
   <div class="alert alert-info text-center">
-    Privacy Policy: We will only ever send you one email- when your Watchdog times out after 25 hours. After the email is sent, your address is wiped from the database.
+    Privacy Policy: We will only ever send you one email- when your Watchdog times out. After the email is sent, your address is wiped from the database.
   </div>
   <div class="row p-3">
     <div class="col-md-6">
@@ -71,20 +75,20 @@
       </h3>
       <ul>
         <li>
-          When you type in an email address and click Start Watchdog, a 25 Hour Watchdog Timer starts running on our servers.
+          When you type in an email address and click Start Watchdog, a Watchdog Timer starts running on our servers.
         </li>
         <li>
-          After 25 hours have elapsed, Watchdog.Email sends an email to the address you specified notifying you that the Watchdog Timer has run out.
+          After the timeout parameter has elapsed, Watchdog.Email sends an email to the address you specified notifying you that the Watchdog Timer has run out.
         </li>
         <li>
-          If you want to delay the email from arriving for another 25 hours, type the same email address into the field and click Start Watchdog again to restart your Watchdog.
+          If you want to delay the email from arriving, type the same email address into the field and click Start Watchdog again to restart your Watchdog.
         </li>
         <li>
-          You can repeat this process as many times as you like; as long as you keep restarting your Watchdog within 25 hours, you will not receive an email.
+          You can repeat this process as many times as you like; as long as you keep restarting your Watchdog within the timeout, you will not receive an email.
         </li>
         <li>
           You can also use this service programmatically by sending your Watchdog.Email request to
-          <code>http://watchdog.email/?email=&lt;email_address&gt;</code>
+          <code>http://watchdog.email/?email=&lt;email_address&gt;&timeout=&lt;timeout_integer_between_600_and_90000&gt;</code>
         </li>
       </ul>
     </div>
