@@ -28,7 +28,7 @@ func startWatchdog(pool *redis.Pool) gin.HandlerFunc {
 			}
 		}()
 		email := c.Query("email")
-		timeout := c.Query("timeout")
+		timeoutParameter := c.Query("timeout")
 		if email == "" {
 			rows, err := redis.Int(conn.Do("ZCOUNT", "email", "-inf", "+inf"))
 			if err != nil {
@@ -63,17 +63,21 @@ func startWatchdog(pool *redis.Pool) gin.HandlerFunc {
 			c.String(http.StatusBadRequest, "Cannot set Watchdog.Email timer for %s", email)
 			return
 		}
-		timeoutValue := int64(90000) // (60 seconds / minute) * (60 minutes / hour) * (25 hours / timeout)
-		if timeout != "" {
-			timeoutValue, err := strconv.ParseInt(timeout, 10, 64)
-			if err != nil || timeoutValue < 600 || timeoutValue > 90000 {
+
+		now := time.Now().Unix()
+		alarm := now
+		if timeoutParameter != "" {
+			timeout, err := strconv.ParseInt(timeoutParameter, 10, 64)
+			if err != nil || timeout < 600 || timeout > 90000 {
 				log.Println(err)
 				c.String(http.StatusBadRequest, "Invalid timeout value! Minimum 600 seconds (5 minutes), Maximum 90000 seconds (25 hours).")
 				return
 			}
+			alarm += timeout
+		} else {
+			alarm += 90000 // (60 seconds / minute) * (60 minutes / hour) * (25 hours / timeout)
 		}
-		now := time.Now().Unix()
-		alarm := now + timeoutValue
+
 		rows, err := redis.Int(conn.Do("ZADD", "email", "CH", alarm, email))
 		if err != nil || rows < 1 {
 			log.Printf("Failed to set Watchdog.Email timer for %s: %s", email, err)
